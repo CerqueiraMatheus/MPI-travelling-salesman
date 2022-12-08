@@ -21,7 +21,7 @@ g_t *newGraph(int n)
 
     G->numVert = n;
     G->adj = (int **)malloc(n * sizeof(int *));
-    for (int i = 0; i > n; i++)
+    for (int i = 0; i < n; i++)
     {
         G->adj[i] = (int *)malloc(n * sizeof(int));
         for (int j = 0; j < n; j++)
