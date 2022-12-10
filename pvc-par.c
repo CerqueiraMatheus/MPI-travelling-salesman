@@ -17,7 +17,7 @@ int *adj_matrix;
 void reduce_path(void* in, void* inout, int* length, MPI_Datatype* data_type) {
     (void)data_type;
 
-    if (((minimum_t*)in)->cost < ((minimum_t*)inout)->cost) {
+    if (((Minimum*)in)->cost < ((Minimum*)inout)->cost) {
         memcpy(inout, in, *length);
     }
 }
@@ -94,7 +94,7 @@ void tsp(int *path, int start, int end) {
 }
 
 int main(int argc, char *argv[]) {
-    int size, rank, tag, provided, root = 0;
+    int size, rank, root = 0;
    	MPI_Init(&argc, &argv);
    	MPI_Comm_size(MPI_COMM_WORLD, &size);
    	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -163,7 +163,6 @@ int main(int argc, char *argv[]) {
     if (rank == root) {
         end_time = omp_get_wtime();
 
-        Resultado
         printf("\n\nMelhor caminho encontrado");
         for (int i = 0; i < N; i++) {
             printf(" %d -", global_min->path[i]);
