@@ -97,7 +97,8 @@ int main(int argc, char *argv[]) {
     // Gerando matriz de adjacência no processo 0
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     if (rank == root) {    
-        srand(1); // ! Pseudo random - toda iteração será igual
+        srand(1); // ! Pseudo random - toda iteração de tamanho N será igual
+
         printf("Matriz de adjacência (col = atual, linha = próximo):\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
 
     // Começando a calcular o tempo
     double start_time = 0, end_time = 0;
-    if (rank == 0) start_time = omp_get_wtime();
+    if (rank == root) start_time = omp_get_wtime();
 
     // Executando os subproblemas do caixeiro viajante para cada processo
     if (rank != 0) {
