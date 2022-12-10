@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
     printf("Custo: %d\n", min_cost);
     printf("Tempo gasto na execução: %.4lf\n", end - start);
 
+    free(adj_matrix);
     free(best_path);
     free(path);
 }
