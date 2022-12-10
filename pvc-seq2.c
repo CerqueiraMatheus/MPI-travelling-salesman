@@ -23,9 +23,9 @@ int main(void) {
     int min_cost = N * HIGH;
     int curr_cost = 0;
 
-    // Usando blacktrappers
+    // QUEM DESENVOLVER UM BLACKTRAPPERS DOU
     for (int i = 0; i < N; i++) {
-        
+
     }
 
     
