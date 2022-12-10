@@ -1,0 +1,6 @@
+hal05 slots=4
+hal06 slots=4
+hal07 slots=4
+hal08 slots=4
+hal09 slots=4
+hal10 slots=4

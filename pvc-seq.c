@@ -1,181 +1,128 @@
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <string.h>
+#include <stdbool.h>
+#include <omp.h>
 
-#define INF __INT_MAX__
-#define MIN(a,b) (((a)<(b))?(a):(b))
+int local_min_cost, N;
+int *adj_matrix, *local_best_path;
 
-typedef struct Grafo g_t;
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
 
-struct Grafo
-{
-    int numVert;
-    int **adj;
-};
+int calculate_cost(int *path, int size) {
+    int cost = 0, idx = 0;
+    for (idx = 0; idx < size - 1; idx++)
+        cost += adj_matrix[path[idx] + N * path[idx + 1]];
+    cost += adj_matrix[path[idx] + N * path[0]];
 
-g_t *newGraph(int n)
-{
+    return cost;
+}
 
-    g_t *G = (g_t *)malloc(sizeof(g_t));
-
-    G->numVert = n;
-    G->adj = (int **)malloc(n * sizeof(int *));
-    for (int i = 0; i < n; i++)
-    {
-        G->adj[i] = (int *)malloc(n * sizeof(int));
-        for (int j = 0; j < n; j++)
-            G->adj[i][j] = INF;
+void reverse(int *first, int *last) {
+    while (first != last && first != --last) {
+        int t = *first;
+        *first = *last;
+        *last = t;
+        ++first;
     }
-    return G;
 }
 
-void freeGraph(g_t *G)
-{
-    if (G == NULL)
-        return;
+int next_permutation(int *first, int *last) {
+    if (first == last) return 0;
 
-    for (int i = 0; i < G->numVert; i++)
-        free(G->adj[i]);
+    int *i = last;
+    if (first == --i) return 0;
 
-    free(G->adj);
-    free(G);
-
-    return;
-}
-
-int addEdge(g_t *G, int weight, int src, int dest)
-{
-    if (G == NULL || src > G->numVert || dest > G->numVert || src < 0 || dest < 0)
-        return -1;
-
-    G->adj[src][dest] = weight;
-    return 0;
-}
-
-int bruteforceTSP(g_t *G)
-{
-    int min_tour = INF;
-
-    for (int i = 0; i < G->numVert; i++)
-    {
-        int tour = 0;
-        for (int j = 0; j < G->numVert; j++)
-        {
-            int k = (j + 1) % G->numVert;
-            tour += G->adj[j][k];
+    while (1) {
+        int *ii = i;
+        if (*--i < *ii) {
+            int *j = last;
+            while (!(*i < *--j))
+                ;
+            int t = *i;
+            *i = *j;
+            *j = t;
+            reverse(ii, last);
+            return 1;
         }
-
-        if (tour < min_tour)
-            min_tour = tour;
-    }
-}
-
-
-
-int* reverse(int* arr,int size, int src, int dest)
-{
-    int* aux = (int*)malloc(size*sizeof(int));
-    int k = 0;
-    for (k = 0; k < src; k++)
-    {
-        aux[k] = arr[k];
-    }
-    for (int i = dest; i > src; i--)
-    {
-        aux[k] = arr[i];
-        k++;
-    }
-    return aux;
-}
-
-int nextPermutation(int* arr, int size)
-{
-    int n = size; 
-    int i, j;
- 
-    // Find for the pivot element.
-    // A pivot is the first element from
-    // end of sequencewhich doesn't follow
-    // property of non-increasing suffix
-    int flag = 0;
-    for (i = n - 2; i >= 0; i--) {
-        if (arr[i] < arr[i + 1]) {
-            flag = 1;
-            break;
+        if (i == first) {
+            reverse(first, last);
+            return 0;
         }
     }
+}
 
-    if (flag == 0){
+// Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
+void tsp(int *path, int start, int end) {
+    while (next_permutation(&path[start], &path[end - 1])) {
+        int cost = calculate_cost(path, end);
+
+        // Checando se a solução atual é melhor que a encontrada anteriormente
+        if (cost < local_min_cost) {
+            local_min_cost = cost;
+            for (int i = 0; i < N; i++)
+                local_best_path[i] = path[i];
+        }
+    }
+    int cost = calculate_cost(path, end);
+
+    // Checando se a solução atual é melhor que a encontrada anteriormente
+    if (cost < local_min_cost) {
+        local_min_cost = cost;
+        for (int i = 0; i < N; i++)
+            local_best_path[i] = path[i];
+    }
+}
+
+int main(int argc, char *argv[]) {
+    // Resgatando a dimensão da matriz da linha de comando
+    if (argc != 2) {
+        printf("Uso: %s N\n", argv[0]);
         return 1;
     }
- 
-    // Check if pivot is not found
-    if (i < 0) {
-        reverse(arr,size,0,size);
-    }
- 
-    // if pivot is found
-    else {
- 
-        // Find for the successor of pivot in suffix
-        for (j = n - 1; j > i; j--) {
-            if (arr[j] > arr[i]) {
-                break;
-            }
+    N = atoi(argv[1]);
+
+    
+    // Gerando matriz de adjacência
+    srand(1); // ! Pseudo random - toda iteração será igual
+    printf("Matriz de adjacência (col = atual, linha = próximo):\n");
+    adj_matrix = (int *) malloc(N * N * sizeof(int));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            adj_matrix[i * N + j] = (i != j) * (rand() % 9 + 1) ;
+            printf("%d ", adj_matrix[i * N + j]);
         }
- 
-        // Swap the pivot and successor
-        int aux = arr[i];
-        arr[i] = arr[j];
-        arr[j] = aux;
- 
-        // Minimise the suffix part
-        reverse(arr,size, i + 1, size);
+        printf("\n");
     }
-    return 0;
-}
 
-int shortest_path_sum(g_t* G)
-{
-    int source = 0;
-    int* nodes = (int*)malloc(G->numVert*sizeof(int));
-    int k = 0;
-    for (int i = 0; i < G->numVert; i++)
-    {
-        if (i != source)
-        {
-            nodes[k] = i;
-            k++;
-        }
+    // Inicializando variáveis de custo e caminho
+    local_min_cost = __INT_MAX__;
+    local_best_path = malloc(N * sizeof(int));
+    int *path = malloc(N * sizeof(int));
+    for (int i = 0; i < N; i++) {
+        path[i] = i;
+        local_best_path[i] = i;
     }
-    int shortest_path = INT_MAX;
-    while (nextPermutation(nodes,k) == 0)
-    {
-        int path_weight = 0;
 
-        int j = source;
-        for (int i = 0; i < k; i++)
-        {
-            path_weight += G->adj[j][nodes[i]];
-            j = nodes[i];
-        }
-        path_weight += G->adj[j][source];
+    // Medindo tempo de execução do Caixeiro Viajante Sequencial
+    double start = omp_get_wtime();
+    tsp(path, 1, N);
+    double end = omp_get_wtime();
 
-        shortest_path = MIN(shortest_path, path_weight);
+    // Resultado
+    printf("\n\nMelhor caminho encontrado");
+    for (int i = 0; i < N; i++) {
+        printf(" %d -", local_best_path[i]);
     }
-    return shortest_path;
-}
+    printf(" %d\n", local_best_path[0]);
+    printf("Custo: %d\n", local_min_cost);
+    printf("Tempo gasto na execução: %.4lf\n", end - start);
 
-int main(int argc, char *argv[])
-{
-    g_t *G = newGraph(3);
-    addEdge(G, 1, 0, 1);
-    addEdge(G, 2, 1, 2);
-
-    int min = shortest_path_sum(G);
-    printf("O min ficou = %d\n", min);
-
-    freeGraph(G);
-    return 0;
+    free(adj_matrix);
+    free(local_best_path);
+    free(path);
 }

@@ -95,17 +95,24 @@ void tsp(int *path, int start, int end) {
 
 int main(int argc, char *argv[]) {
     int size, rank, root = 0;
+    
    	MPI_Init(&argc, &argv);
    	MPI_Comm_size(MPI_COMM_WORLD, &size);
    	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // Resgatando a dimensão da matriz da linha de comando
+    
     if (argc != 2) {
-        printf("Uso: %s N\n", argv[0]);
+        if (rank == 0)printf("Uso: %s N\n", argv[0]);
         return 1;
     }
+    
+    // Resgatando a dimensão da matriz da linha de comando
     N = atoi(argv[1]);
-
+    if (N <= 1){
+        if(rank == 0) printf("Valor de N inválido, retornando...\n");
+        return 1;
+    }
+    
     // Gerando matriz de adjacência no processo 0
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     if (rank == root) {    
@@ -138,16 +145,19 @@ int main(int argc, char *argv[]) {
     if (rank == root) start_time = omp_get_wtime();
 
     // Executando os subproblemas do caixeiro viajante para cada processo
-    if (rank != root && rank <= N) {      
+    if (rank != root && rank < N) {
         // Fixando valores iniciais para executar o sub-caminho do Caixeiro Viajante
         path[1] = rank;
+        printf("Entrei meu rank é %d\n", rank);
         for (int val = 1, idx = 2; idx < N; val++, idx++) {
             val += idx - 1 == rank;
             path[idx] = val;
         }
-
-        tsp(path, 2, N);
+        tsp(path, 2 , N);
+        printf("Sai meu rank é %d\n", rank);
+        
     }
+    printf("Meu nominho é %d , Meu custo atual é %d\n",rank,local_min->cost);
     free(path);
     free(adj_matrix);
 
