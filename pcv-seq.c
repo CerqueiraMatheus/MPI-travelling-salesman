@@ -1,3 +1,10 @@
+// Grupo TA02
+// Nome: Antonio Rodrigues Rigolino NUSP: 11795791
+// Nome: Gustavo Henrique Brunelli NUSP: 11801053
+// Nome: João Guilherme Jarochinski Marinho NUSP: 10698193
+// Nome: Matheus Henrique de Cerqueira Pinto NUSP: 11911104
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,12 +14,7 @@
 int local_min_cost, N;
 int *adj_matrix, *local_best_path;
 
-void swap(int *a, int *b) {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
+// Função que calcula o custo dado um caminho completo
 int calculate_cost(int *path, int size) {
     int cost = 0, idx = 0;
     for (idx = 0; idx < size - 1; idx++)
@@ -22,6 +24,7 @@ int calculate_cost(int *path, int size) {
     return cost;
 }
 
+// Função que inverte as posições do caminho
 void reverse(int *first, int *last) {
     while (first != last && first != --last) {
         int t = *first;
@@ -31,6 +34,7 @@ void reverse(int *first, int *last) {
     }
 }
 
+// Função que calcula a próxima permutação do caminho lexicograficamente maior
 int next_permutation(int *first, int *last) {
     if (first == last) return 0;
 
@@ -56,7 +60,7 @@ int next_permutation(int *first, int *last) {
     }
 }
 
-// Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
+// Função que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
     while (next_permutation(&path[start], &path[end])) {
         int cost = calculate_cost(path, end);
@@ -68,9 +72,9 @@ void tsp(int *path, int start, int end) {
                 local_best_path[i] = path[i];
         }
     }
-    int cost = calculate_cost(path, end);
 
-    // Checando se a solução atual é melhor que a encontrada anteriormente
+    // Teste para a última solução
+    int cost = calculate_cost(path, end);
     if (cost < local_min_cost) {
         local_min_cost = cost;
         for (int i = 0; i < N; i++)
@@ -119,6 +123,7 @@ int main(int argc, char *argv[]) {
     printf("Custo: %d\n", local_min_cost);
     printf("Tempo gasto na execução: %.4lf\n", end - start);
 
+    // Finalizando aplicação
     free(adj_matrix);
     free(local_best_path);
     free(path);

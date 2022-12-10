@@ -3,3 +3,4 @@ exec
 *.out
 pcv-par
 pcv-seq
+.vscode

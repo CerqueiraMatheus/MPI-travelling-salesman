@@ -1,3 +1,10 @@
+// Grupo TA02
+// Nome: Antonio Rodrigues Rigolino NUSP: 11795791
+// Nome: Gustavo Henrique Brunelli NUSP: 11801053
+// Nome: João Guilherme Jarochinski Marinho NUSP: 10698193
+// Nome: Matheus Henrique de Cerqueira Pinto NUSP: 11911104
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +12,7 @@
 #include <omp.h>
 #include <mpi.h>
 
+// Struct para que possamos realizar a redução e manter o menor caminho relacionado
 typedef struct Minimum {
     int cost;
     int path[];
@@ -14,6 +22,8 @@ Minimum *local_min, *global_minimum;
 int N;
 int *adj_matrix;
 
+// Função de redução sobre o caminho mínimo
+// Compara custo e sobrescreve o caminho para a saída
 void reduce_path(void* in, void* inout, int* length, MPI_Datatype* data_type) {
     (void)data_type;
 
@@ -22,12 +32,7 @@ void reduce_path(void* in, void* inout, int* length, MPI_Datatype* data_type) {
     }
 }
 
-void swap(int *a, int *b) {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
+// Função que calcula o custo dado um caminho completo
 int calculate_cost(int *path, int size) {
     int cost = 0, idx = 0;
     for (idx = 0; idx < size - 1; idx++)
@@ -37,6 +42,7 @@ int calculate_cost(int *path, int size) {
     return cost;
 }
 
+// Função que inverte as posições do caminho
 void reverse(int *first, int *last) {
     while (first != last && first != --last) {
         int t = *first;
@@ -46,6 +52,7 @@ void reverse(int *first, int *last) {
     }
 }
 
+// Função que calcula a próxima permutação do caminho lexicograficamente maior
 int next_permutation(int *first, int *last) {
     if (first == last) return 0;
 
@@ -71,7 +78,7 @@ int next_permutation(int *first, int *last) {
     }
 }
 
-// Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
+// Função que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
     while (next_permutation(&path[start], &path[end])) {
         int cost = calculate_cost(path, end);
@@ -83,9 +90,9 @@ void tsp(int *path, int start, int end) {
                 local_min->path[i] = path[i];
         }
     }
-    int cost = calculate_cost(path, end);
 
-    // Checando se a solução atual é melhor que a encontrada anteriormente
+    // Teste para a última solução
+    int cost = calculate_cost(path, end);
     if (cost < local_min->cost) {
         local_min->cost = cost;
         for (int i = 0; i < N; i++)
@@ -94,19 +101,19 @@ void tsp(int *path, int start, int end) {
 }
 
 int main(int argc, char *argv[]) {
+    // Incializando o OpenMPI
     int size, rank, root = 0;
-    
    	MPI_Init(&argc, &argv);
    	MPI_Comm_size(MPI_COMM_WORLD, &size);
    	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     
+    // Resgatando a dimensão da matriz da linha de comando
     if (argc != 2) {
         if (rank == 0)printf("Uso: %s N\n", argv[0]);
         return 1;
     }
     
-    // Resgatando a dimensão da matriz da linha de comando
     N = atoi(argv[1]);
     if (N <= 1){
         if(rank == 0) printf("Valor de N inválido, retornando...\n");
@@ -116,7 +123,7 @@ int main(int argc, char *argv[]) {
     // Gerando matriz de adjacência no processo 0
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     if (rank == root) {    
-        srand(1); // Pseudo random - toda iteração de tamanho N será igual
+        srand(1); // Pseudo random - toda iteração será igual
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -150,7 +157,6 @@ int main(int argc, char *argv[]) {
             path[idx] = val;
         }
         tsp(path, 2 , N);
-        
     }
     free(path);
     free(adj_matrix);
