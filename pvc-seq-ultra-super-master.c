@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <omp.h>
 
-int min_cost, N;
-int *adj_matrix, *best_path;
+int local_min_cost, N;
+int *adj_matrix, *local_best_path;
 
 void swap(int *a, int *b) {
     int temp = *a;
@@ -62,19 +62,19 @@ void tsp(int *path, int start, int end) {
         int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente
-        if (cost < min_cost) {
-            min_cost = cost;
+        if (cost < local_min_cost) {
+            local_min_cost = cost;
             for (int i = 0; i < N; i++)
-                best_path[i] = path[i];
+                local_best_path[i] = path[i];
         }
     }
     int cost = calculate_cost(path, end);
 
     // Checando se a solução atual é melhor que a encontrada anteriormente
-    if (cost < min_cost) {
-        min_cost = cost;
+    if (cost < local_min_cost) {
+        local_min_cost = cost;
         for (int i = 0; i < N; i++)
-            best_path[i] = path[i];
+            local_best_path[i] = path[i];
     }
 }
 
@@ -100,12 +100,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Inicializando variáveis de custo e caminho
-    min_cost = __INT_MAX__;
-    best_path = malloc(N * sizeof(int));
+    local_min_cost = __INT_MAX__;
+    local_best_path = malloc(N * sizeof(int));
     int *path = malloc(N * sizeof(int));
     for (int i = 0; i < N; i++) {
         path[i] = i;
-        best_path[i] = i;
+        local_best_path[i] = i;
     }
 
     // Medindo tempo de execução do Caixeiro Viajante Sequencial
@@ -116,13 +116,13 @@ int main(int argc, char *argv[]) {
     // Resultado
     printf("\n\nMelhor caminho encontrado");
     for (int i = 0; i < N; i++) {
-        printf(" %d -", best_path[i]);
+        printf(" %d -", local_best_path[i]);
     }
-    printf(" %d\n", best_path[0]);
-    printf("Custo: %d\n", min_cost);
+    printf(" %d\n", local_best_path[0]);
+    printf("Custo: %d\n", local_min_cost);
     printf("Tempo gasto na execução: %.4lf\n", end - start);
 
     free(adj_matrix);
-    free(best_path);
+    free(local_best_path);
     free(path);
 }
