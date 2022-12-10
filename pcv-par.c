@@ -116,15 +116,12 @@ int main(int argc, char *argv[]) {
     // Gerando matriz de adjacência no processo 0
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     if (rank == root) {    
-        srand(1); // ! Pseudo random - toda iteração de tamanho N será igual
+        srand(1); // Pseudo random - toda iteração de tamanho N será igual
 
-        printf("Matriz de adjacência (col = atual, linha = próximo):\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 adj_matrix[i * N + j] = (i != j) * (rand() % 9 + 1) ;
-                printf("%d ", adj_matrix[i * N + j]);
             }
-            printf("\n");
         }
     }
 

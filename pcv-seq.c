@@ -88,15 +88,12 @@ int main(int argc, char *argv[]) {
 
     
     // Gerando matriz de adjacência
-    srand(1); // ! Pseudo random - toda iteração será igual
-    printf("Matriz de adjacência (col = atual, linha = próximo):\n");
+    srand(1); // Pseudo random - toda iteração será igual
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             adj_matrix[i * N + j] = (i != j) * (rand() % 9 + 1) ;
-            printf("%d ", adj_matrix[i * N + j]);
         }
-        printf("\n");
     }
 
     // Inicializando variáveis de custo e caminho
