@@ -9,7 +9,7 @@ seq: pvc-seq
 	@./pvc-seq $(NUMS)
 
 par: pvc-par
-	@mpirun -np $(NPROCS) --hostfile hostfile.txt pvc-par $(NUMS)
+	@mpirun -np $(NPROCS) pvc-par $(NUMS)
 
 pvc-seq: pvc-seq.c
 	@$(CC) pvc-seq.c -o pvc-seq $(CFLAGS)

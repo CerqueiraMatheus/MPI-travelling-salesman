@@ -1,3 +1,5 @@
 exec
 *.o
 *.out
+pvc-par
+pvc-seq

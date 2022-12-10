@@ -58,7 +58,7 @@ int next_permutation(int *first, int *last) {
 
 // Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
-    while (next_permutation(&path[start], &path[end - 1])) {
+    while (next_permutation(&path[start], &path[end])) {
         int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente

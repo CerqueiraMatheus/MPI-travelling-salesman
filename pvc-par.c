@@ -73,7 +73,7 @@ int next_permutation(int *first, int *last) {
 
 // Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
-    while (next_permutation(&path[start], &path[end - 1])) {
+    while (next_permutation(&path[start], &path[end])) {
         int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente
@@ -148,16 +148,13 @@ int main(int argc, char *argv[]) {
     if (rank != root && rank < N) {
         // Fixando valores iniciais para executar o sub-caminho do Caixeiro Viajante
         path[1] = rank;
-        printf("Entrei meu rank é %d\n", rank);
         for (int val = 1, idx = 2; idx < N; val++, idx++) {
             val += idx - 1 == rank;
             path[idx] = val;
         }
         tsp(path, 2 , N);
-        printf("Sai meu rank é %d\n", rank);
         
     }
-    printf("Meu nominho é %d , Meu custo atual é %d\n",rank,local_min->cost);
     free(path);
     free(adj_matrix);
 
