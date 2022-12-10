@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <omp.h>
 
-#define HIGH 10000
-
 int min_cost, N;
 int *adj_matrix, *best_path;
 
@@ -15,14 +13,20 @@ void swap(int *a, int *b) {
     *b = temp;
 }
 
+int calculate_cost(int *path, int size) {
+    int cost = 0, idx = 0;
+    for (idx = 0; idx < size - 1; idx++)
+        cost += adj_matrix[path[idx] + N * path[idx + 1]];
+    cost += adj_matrix[path[idx] + N * path[0]];
+
+    return cost;
+}
+
 // Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
+    // Caso base: nova permutação encontrada, calculamos então o custo
     if (start == end) { 
-        // Caso base: nova permutação, calculamos então o custo
-        int cost = 0, idx = 0;
-        for (idx = 0; idx < end - 1; idx++)
-            cost += adj_matrix[path[idx] + N * path[idx + 1]];
-        cost += adj_matrix[path[idx] + N * path[0]];
+        int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente
         if (cost < min_cost) {
@@ -51,15 +55,18 @@ int main(int argc, char *argv[]) {
     srand(1); // ! Pseudo random - toda iteração será igual
     
     // Gerando matriz de adjacência
+    printf("Matriz de adjacência (col = atual, linha = próximo):\n");
     adj_matrix = (int *) malloc(N * N * sizeof(int));
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            adj_matrix[i * N + j] = (i == j * HIGH) + (rand() % 10 + 1);
+            adj_matrix[i * N + j] = (i != j) * (rand() % 9 + 1) ;
+            printf("%d ", adj_matrix[i * N + j]);
         }
+        printf("\n");
     }
 
     // Inicializando variáveis de custo e caminho
-    min_cost = HIGH;
+    min_cost = __INT_MAX__;
     best_path = malloc(N * sizeof(int));
     int *path = malloc(N * sizeof(int));
     for (int i = 0; i < N; i++) {
@@ -73,12 +80,14 @@ int main(int argc, char *argv[]) {
     double end = omp_get_wtime();
 
     // Resultado
-    printf("Melhor caminho encontrado");
+    printf("\n\nMelhor caminho encontrado");
     for (int i = 0; i < N; i++) {
         printf(" %d -", best_path[i]);
     }
     printf(" %d\n", best_path[0]);
-
     printf("Custo: %d\n", min_cost);
-    printf("Tempo gasto na execução: %.2lf\n", end - start);
+    printf("Tempo gasto na execução: %.4lf\n", end - start);
+
+    free(best_path);
+    free(path);
 }
