@@ -24,7 +24,7 @@ grafo_t *novo_grafo(int n) {
     grafo_t *grafo = (grafo_t *)malloc(sizeof(grafo_t));
 
     // Inicializamos o número de vértices do grafo
-    grafo->num_vertices = n;
+    grafo->num_vertices = n + 1;
 
     // Alocamos memória para a matriz de adjacência do grafo
     grafo->adj = (int **)malloc(n * sizeof(int *));
@@ -170,6 +170,11 @@ void exibe_grafo(grafo_t *grafo) {
     }
 }
 
+void libera_resultado(Resultado* res){
+    free(res->caminho);
+    free(res);
+}
+
 int main(int argc, char *argv[]) {
     // Verificamos se o número de argumentos passados é válido
     if (argc != 2) {
@@ -206,8 +211,9 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-    // Liberamos a memória alocada para o grafo
+    // Liberamos a memória alocada para o grafo e resultado
     libera_grafo(grafo);
-
+    libera_resultado(resultado);
+    
     return 0;
 }
