@@ -1,24 +1,27 @@
 CFLAGS += -Wall -Wextra -pedantic -O3 -fopenmp
-NPROCS ?= 8
-NUMS ?= 5
+NPROCS ?= 4
+NUMS ?= 4
 
 
-all: pvc-seq pvc-par
+all: pcv-seq pcv-par
 
-seq: pvc-seq
-	@./pvc-seq $(NUMS)
+seq: pcv-seq
+	@./pcv-seq $(NUMS)
 
-par: pvc-par
-	@mpirun -np $(NPROCS) pvc-par $(NUMS)
+par: pcv-par
+	@mpirun -np $(NPROCS) pcv-par $(NUMS)
 
-pvc-seq: pvc-seq.c
-	@$(CC) pvc-seq.c -o pvc-seq $(CFLAGS)
+par-cluster: pcv-par
+	@mpirun -np $(NPROCS) --hostfile hostfile.txt pcv-par $(NUMS)
 
-pvc-par: pvc-par.c
-	@mpicc pvc-par.c -o pvc-par $(CFLAGS)
+pcv-seq: pcv-seq.c
+	@$(CC) pcv-seq.c -o pcv-seq $(CFLAGS)
+
+pcv-par: pcv-par.c
+	@mpicc pcv-par.c -o pcv-par $(CFLAGS)
 
 clean:
-	@rm -f pvc-seq pvc-par
+	@rm -f pcv-seq pcv-par
 
 
 .PHONY: seq par clean
