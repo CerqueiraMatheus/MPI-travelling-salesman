@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <omp.h>
-// #include <mpi.h>
+#include <mpi.h>
 
 int local_min_cost, N;
 int *local_best_path, *adj_matrix;
@@ -161,7 +161,8 @@ int main(int argc, char *argv[]) {
 
         printf("Custo: %d\n", global_min_cost);
         printf("Tempo gasto na execução: %.4lf\n", end_time - start_time);
-
-
     }
+
+    MPI_Finalize();
+    return 0;
 }
