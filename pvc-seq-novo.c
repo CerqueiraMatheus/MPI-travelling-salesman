@@ -24,7 +24,7 @@ grafo_t *novo_grafo(int n) {
     grafo_t *grafo = (grafo_t *)malloc(sizeof(grafo_t));
 
     // Inicializamos o número de vértices do grafo
-    grafo->num_vertices = n;
+    grafo->num_vertices = n + 1;
 
     // Alocamos memória para a matriz de adjacência do grafo
     grafo->adj = (int **)malloc(n * sizeof(int *));
