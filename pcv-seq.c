@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     double end = omp_get_wtime();
 
     // Resultado
-    printf("\n\nMelhor caminho encontrado");
+    printf("Melhor caminho encontrado");
     for (int i = 0; i < N; i++) {
         printf(" %d -", local_best_path[i]);
     }

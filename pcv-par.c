@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     if (rank == root) {
         end_time = omp_get_wtime();
 
-        printf("\n\nMelhor caminho encontrado");
+        printf("Melhor caminho encontrado");
         for (int i = 0; i < N; i++) {
             printf(" %d -", global_min->path[i]);
         }
