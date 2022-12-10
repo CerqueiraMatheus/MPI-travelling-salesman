@@ -5,8 +5,22 @@
 #include <omp.h>
 #include <mpi.h>
 
-int local_min_cost, N;
-int *local_best_path, *adj_matrix;
+typedef struct Minimum {
+    int cost;
+    int path[];
+} Minimum;
+
+Minimum *local_min, *global_minimum;
+int N;
+int *adj_matrix;
+
+void reduce_path(void* in, void* inout, int* length, MPI_Datatype* data_type) {
+    (void)data_type;
+
+    if (((minimum_t*)in)->cost < ((minimum_t*)inout)->cost) {
+        memcpy(inout, in, *length);
+    }
+}
 
 void swap(int *a, int *b) {
     int temp = *a;
@@ -63,29 +77,27 @@ void tsp(int *path, int start, int end) {
         int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente
-        if (cost < local_min_cost) {
-            local_min_cost = cost;
+        if (cost < local_min->cost) {
+            local_min->cost = cost;
             for (int i = 0; i < N; i++)
-                local_best_path[i] = path[i];
+                local_min->path[i] = path[i];
         }
     }
     int cost = calculate_cost(path, end);
 
     // Checando se a solução atual é melhor que a encontrada anteriormente
-    if (cost < local_min_cost) {
-        local_min_cost = cost;
+    if (cost < local_min->cost) {
+        local_min->cost = cost;
         for (int i = 0; i < N; i++)
-            local_best_path[i] = path[i];
+            local_min->path[i] = path[i];
     }
 }
 
 int main(int argc, char *argv[]) {
-    
     int size, rank, tag, provided, root = 0;
    	MPI_Init(&argc, &argv);
    	MPI_Comm_size(MPI_COMM_WORLD, &size);
    	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-   	MPI_Status status;
 
     // Resgatando a dimensão da matriz da linha de comando
     if (argc != 2) {
@@ -113,12 +125,12 @@ int main(int argc, char *argv[]) {
     MPI_Bcast(adj_matrix, N*N, MPI_INT, root, MPI_COMM_WORLD);
 
     // Inicializando variáveis de custo e caminho locais
-    local_min_cost = __INT_MAX__;
-    local_best_path = malloc(N * sizeof(int));
+    local_min = malloc((N + 1) * sizeof(int));
+    local_min->cost = __INT_MAX__;
     int *path = malloc(N * sizeof(int));
     for (int i = 0; i < N; i++) {
         path[i] = i;
-        local_best_path[i] = i;
+        local_min->path[i]= i;
     }
 
     // Começando a calcular o tempo
@@ -126,7 +138,7 @@ int main(int argc, char *argv[]) {
     if (rank == root) start_time = omp_get_wtime();
 
     // Executando os subproblemas do caixeiro viajante para cada processo
-    if (rank != 0) {
+    if (rank != root && rank <= N) {      
         // Fixando valores iniciais para executar o sub-caminho do Caixeiro Viajante
         path[1] = rank;
         for (int val = 1, idx = 2; idx < N; val++, idx++) {
@@ -139,30 +151,32 @@ int main(int argc, char *argv[]) {
     free(path);
     free(adj_matrix);
 
-
     // Reduzindo custo mínimo de todos os processos
-    int global_min_cost;
-    MPI_Reduce(&local_min_cost, &global_min_cost, 1, MPI_INT, MPI_MIN, root, MPI_COMM_WORLD);
+    Minimum *global_min = malloc((N + 1) * sizeof(int));
 
-    // 
-    free(local_best_path);
+    // Criando redução customizada
+    MPI_Op path_reduction;
+    MPI_Op_create(reduce_path, true, &path_reduction);
+    MPI_Reduce(local_min, global_min, (N + 1) *  sizeof(int), MPI_BYTE, path_reduction, root, MPI_COMM_WORLD);
 
     // Imprimindo resultados através do processo root
     if (rank == root) {
         end_time = omp_get_wtime();
 
-        // Resultado
-        // printf("\n\nMelhor caminho encontrado");
-        // for (int i = 0; i < N; i++) {
-        //     printf(" %d -", global_best_path[i]);
-        // }
-        // printf(" %d\n", global_best_path[0]);
+        Resultado
+        printf("\n\nMelhor caminho encontrado");
+        for (int i = 0; i < N; i++) {
+            printf(" %d -", global_min->path[i]);
+        }
+        printf(" %d\n", global_min->path[0]);
 
 
-        printf("Custo: %d\n", global_min_cost);
+        printf("Custo: %d\n", global_min->cost);
         printf("Tempo gasto na execução: %.4lf\n", end_time - start_time);
     }
 
+    free(local_min);
+    free(global_min);
     MPI_Finalize();
     return 0;
 }
