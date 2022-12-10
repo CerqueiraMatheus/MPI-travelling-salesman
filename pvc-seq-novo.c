@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
 #define NO_INICIO 0
 #define INF INT_MAX
@@ -24,7 +25,7 @@ grafo_t *novo_grafo(int n) {
     grafo_t *grafo = (grafo_t *)malloc(sizeof(grafo_t));
 
     // Inicializamos o número de vértices do grafo
-    grafo->num_vertices = n + 1;
+    grafo->num_vertices = n;
 
     // Alocamos memória para a matriz de adjacência do grafo
     grafo->adj = (int **)malloc(n * sizeof(int *));
@@ -170,11 +171,6 @@ void exibe_grafo(grafo_t *grafo) {
     }
 }
 
-void libera_resultado(Resultado* res){
-    free(res->caminho);
-    free(res);
-}
-
 int main(int argc, char *argv[]) {
     // Verificamos se o número de argumentos passados é válido
     if (argc != 2) {
@@ -202,18 +198,23 @@ int main(int argc, char *argv[]) {
     exibe_grafo(grafo);
 
     // Calculamos a menor rota usando o algoritmo de força bruta
+    double start = omp_get_wtime();
+
     resultado = tsp(grafo);
+
+    double end = omp_get_wtime();
+
 
     // Exibimos o resultado
     printf("Menor rota: %d\n", resultado->custo);
     for (int i = 0; i < grafo->num_vertices + 1; i++) {
         printf("%d", resultado->caminho[i]);
     }
+    printf("Tempo: %.2lf\n", end-start);
     printf("\n");
 
-    // Liberamos a memória alocada para o grafo e resultado
+    // Liberamos a memória alocada para o grafo
     libera_grafo(grafo);
-    libera_resultado(resultado);
-    
+
     return 0;
 }

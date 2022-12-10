@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <omp.h>
+// #include <mpi.h>
 
 int min_cost, N;
 int *adj_matrix, *best_path;
@@ -22,10 +23,43 @@ int calculate_cost(int *path, int size) {
     return cost;
 }
 
+void reverse(int *first, int *last) {
+    while (first != last && first != --last) {
+        int t = *first;
+        *first = *last;
+        *last = t;
+        ++first;
+    }
+}
+
+int next_permutation(int *first, int *last) {
+    if (first == last) return 0;
+
+    int *i = last;
+    if (first == --i) return 0;
+
+    while (1) {
+        int *ii = i;
+        if (*--i < *ii) {
+            int *j = last;
+            while (!(*i < *--j))
+                ;
+            int t = *i;
+            *i = *j;
+            *j = t;
+            reverse(ii, last);
+            return 1;
+        }
+        if (i == first) {
+            reverse(first, last);
+            return 0;
+        }
+    }
+}
+
 // Função recursiva que gera todos os caminhos possíveis e calcula seus custos usando permutação
 void tsp(int *path, int start, int end) {
-    // Caso base: nova permutação encontrada, calculamos então o custo
-    if (start == end) { 
+    while (next_permutation(&path[start], &path[end - 1])) {
         int cost = calculate_cost(path, end);
 
         // Checando se a solução atual é melhor que a encontrada anteriormente
@@ -35,21 +69,19 @@ void tsp(int *path, int start, int end) {
                 best_path[i] = path[i];
         }
     }
-    else { // Realizanto trocas para gerar novas permutações
-        for (int i = start; i < end; i++) {
-            swap(&path[start], &path[i]);
-            tsp(path, start + 1, end);
-            swap(&path[start], &path[i]);
-        }
+    int cost = calculate_cost(path, end);
+
+    // Checando se a solução atual é melhor que a encontrada anteriormente
+    if (cost < min_cost) {
+        min_cost = cost;
+        for (int i = 0; i < N; i++)
+            best_path[i] = path[i];
     }
 }
 
 int main(int argc, char *argv[]) {
     // Initialize the MPI environment
-    int num_threads, my_rank;
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_threads);
-	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    // int num_threads, my_rank;
 
     // Resgatando a dimensão da matriz da linha de comando
     if (argc != 2) {
@@ -82,7 +114,7 @@ int main(int argc, char *argv[]) {
 
     // Medindo tempo de execução do Caixeiro Viajante Sequencial
     double start = omp_get_wtime();
-    tsp(path, 0, N);
+    tsp(path, 1, N);
     double end = omp_get_wtime();
 
     // Resultado
