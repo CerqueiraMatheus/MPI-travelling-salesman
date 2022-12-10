@@ -14,5 +14,5 @@
 #### Paralelo
 - Compilação: `make pcv-par`
 - Execução em uma máquina: `make par` ou `mpirun [--oversubscribe] -np NPROCS pcv-par DIMENSAO`
-- Execução no cluster: Cadastrar os hosts de interesse em hostfile.txt e então executar `make par-cluster` ou `mpirun -np NPROCS --oversubscribe --hostfile hostfile.txt pcv-par DIMENSAO`
+- Execução no cluster: Cadastrar os hosts de interesse em hostfile.txt e então executar `make par-cluster` ou `mpirun [--oversubscribe] -np NPROCS --hostfile hostfile.txt pcv-par DIMENSAO`
 
