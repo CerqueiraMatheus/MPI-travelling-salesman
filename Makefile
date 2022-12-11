@@ -16,7 +16,7 @@ seq: pcv-seq
 	@./pcv-seq $(NUMS)
 
 par: pcv-par
-	@mpirun -np $(NPROCS) pcv-par $(NUMS)
+	@mpirun -np $(NPROCS) --oversubscribe pcv-par $(NUMS)
 
 par-cluster: pcv-par
 	@mpirun -np $(NPROCS) --oversubscribe --hostfile hostfile.txt pcv-par $(NUMS)
